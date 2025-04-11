@@ -31,17 +31,26 @@ MAIN_UPDATE_KEYWORDS = ["awakening of the primals",  "grave of eden",
 
 #Title webscraping function
 async def fetch_page_title(url):
-    """Fetch the title of a webpage given its URL."""
+    """Fetch the update title from a webpage given its URL."""
     async with aiohttp.ClientSession() as session:
         try:
             async with session.get(url, timeout=10) as response:
-                html = await response.text()
+                html = await response.text(errors='ignore')
                 soup = BeautifulSoup(html, "html.parser")
+
+                # Target the <h2 class="entry-title">
+                h2 = soup.find("h2", class_="entry-title")
+                if h2:
+                    return h2.get_text(strip=True)
+
+                # Fallback to <title>
                 title = soup.title.string if soup.title else ""
                 return title.strip()
+
         except Exception as e:
             print(f"Error fetching page: {url}\n{e}")
             return ""
+
 
 #Logged in notification
 @bot.event
